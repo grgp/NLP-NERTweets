@@ -37,6 +37,7 @@ def toNERTaggedTuples(line):
 
 def main():
     tagger = trainPosTag('unigram')
+    wordset = {}
     with open("training_data_new.txt") as f:
         errorCount = 0
         taggedWordsCount = 0
@@ -50,17 +51,20 @@ def main():
                     taggedWords = toNERTaggedTuples(line)
                     justWords = [tuple[0] for tuple in taggedWords]
 
-                    # print(ne_chunk(pos_tag(justWords)))
                     j = joinBackTogether(justWords)
                     k = tagger.tag(justWords)
-                    # print(str(len(taggedWords)) + ' tokens: ' + str(taggedWords))
-                    # print(str(len(k)) + ' tokens: ' + str(k))
+                    
                     for idx, tup in enumerate(taggedWords):
                         if tup[1] != 'X':
                             if k[idx][1] == 'NNP':
                                 taggedAsNNP += 1
                             else:
                                 notTaggedAsNNP += 1
+                            lw = str.lower(tup[0])
+                            if lw in wordset:
+                                wordset[lw] += 1
+                            else:
+                                wordset[lw] = 1
 
                     for tup in k:
                         if tup[1] is not None:
@@ -82,6 +86,8 @@ def main():
         print()
         print("taggedNNPCount: " + str(taggedNNPCount))
         print("percentageNNPCounted: " + str(taggedAsNNP/(taggedAsNNP+notTaggedAsNNP)))
+        print()
+        print(wordset)
 
 if __name__ == "__main__":
     main()

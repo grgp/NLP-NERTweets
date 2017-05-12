@@ -1,5 +1,5 @@
-import nltk, random
-from nltk.tokenize import word_tokenize
+import nltk, random, timeit
+from nltk import word_tokenize, pos_tag, ne_chunk
 from wsPostag import trainPosTag
 
 def postgd(line):
@@ -36,23 +36,52 @@ def toNERTaggedTuples(line):
     return taggedWords
 
 def main():
+    tagger = trainPosTag('unigram')
     with open("training_data_new.txt") as f:
         errorCount = 0
+        taggedWordsCount = 0
+        untaggedWordsCount = 0
+        taggedNNPCount = 0
+        taggedAsNNP = 0
+        notTaggedAsNNP = 0
         for idx, line in enumerate(f):
             try:
-                if idx == 452:
+                if True:
                     taggedWords = toNERTaggedTuples(line)
                     justWords = [tuple[0] for tuple in taggedWords]
 
+                    # print(ne_chunk(pos_tag(justWords)))
                     j = joinBackTogether(justWords)
-                    k = trainPosTag('unigram').tag(justWords)
-                    print(str(len(taggedWords)) + ' tokens: ' + str(taggedWords))
-                    print(str(len(k)) + ' tokens: ' + str(k))
+                    k = tagger.tag(justWords)
+                    # print(str(len(taggedWords)) + ' tokens: ' + str(taggedWords))
+                    # print(str(len(k)) + ' tokens: ' + str(k))
+                    for idx, tup in enumerate(taggedWords):
+                        if tup[1] != 'X':
+                            if k[idx][1] == 'NNP':
+                                taggedAsNNP += 1
+                            else:
+                                notTaggedAsNNP += 1
+
+                    for tup in k:
+                        if tup[1] is not None:
+                            taggedWordsCount += 1
+                            if tup[1] == 'NNP':
+                                taggedNNPCount += 1
+                        else:
+                            untaggedWordsCount += 1
+
             except UnicodeEncodeError:
                 print("Error yo, I'm counting dis.")
                 errorCount += 1
 
-        print("errorCount: " + str(errorCount))
+        print("unicodeErrorCount: " + str(errorCount))
+        print()
+        print("taggedWordsCount: " + str(taggedWordsCount))
+        print("untaggedWordsCount: " + str(untaggedWordsCount))
+        print("percentageCounted: " + str(taggedWordsCount/(taggedWordsCount+untaggedWordsCount)))
+        print()
+        print("taggedNNPCount: " + str(taggedNNPCount))
+        print("percentageNNPCounted: " + str(taggedAsNNP/(taggedAsNNP+notTaggedAsNNP)))
 
 if __name__ == "__main__":
     main()

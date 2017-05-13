@@ -1,4 +1,4 @@
-import nltk, random, timeit
+import nltk
 from nltk import word_tokenize, pos_tag, ne_chunk
 from wsPostag import trainPosTag
 
@@ -35,59 +35,58 @@ def toNERTaggedTuples(line):
 
     return taggedWords
 
-def main():
-    tagger = trainPosTag('unigram')
-    wordset = {}
+class TaggedNER:
+    nerTaggedLines = []
+    posTaggedLines = []
+    nerWordset = {}
+    posWordset = {}
+
+    def __init__(self, nerTaggedLines=[], posTaggedLines=[], nerWordset={}, posWordset={}):
+        self.nerTaggedLines = nerTaggedLines
+        self.posTaggedLines = posTaggedLines
+        self.nerWordset = nerWordset
+        self.posWordset = posWordset
+
+def processSceleTrainingData(posTagger):
+    nerTaggedLines = []
+    posTaggedLines = []
+    nerWordset = {}
+    posWordset = {}
     with open("training_data_new.txt") as f:
-        errorCount = 0
-        taggedWordsCount = 0
-        untaggedWordsCount = 0
-        taggedNNPCount = 0
-        taggedAsNNP = 0
-        notTaggedAsNNP = 0
         for idx, line in enumerate(f):
             try:
-                if True:
-                    taggedWords = toNERTaggedTuples(line)
-                    justWords = [tuple[0] for tuple in taggedWords]
+                nerTaggedWords = toNERTaggedTuples(line)
+                justWords = [tuple[0] for tuple in nerTaggedWords]
+                posTaggedWords = posTagger.tag(justWords)
+                
+                nerTaggedLines.append(nerTaggedWords)
+                posTaggedLines.append(posTaggedWords)
 
-                    j = joinBackTogether(justWords)
-                    k = tagger.tag(justWords)
-                    
-                    for idx, tup in enumerate(taggedWords):
-                        if tup[1] != 'X':
-                            if k[idx][1] == 'NNP':
-                                taggedAsNNP += 1
-                            else:
-                                notTaggedAsNNP += 1
-                            lw = str.lower(tup[0])
-                            if lw in wordset:
-                                wordset[lw] += 1
-                            else:
-                                wordset[lw] = 1
-
-                    for tup in k:
-                        if tup[1] is not None:
-                            taggedWordsCount += 1
-                            if tup[1] == 'NNP':
-                                taggedNNPCount += 1
+                for idx, tup in enumerate(nerTaggedWords):
+                    if tup[1] != 'X':
+                        if tup in nerWordset:
+                            nerWordset[tup] += 1
                         else:
-                            untaggedWordsCount += 1
+                            nerWordset[tup] = 1
+
+                for idx, tup in enumerate(posTaggedWords):
+                    if tup[1] == 'NNP':
+                        if tup in posWordset:
+                            posWordset[tup] += 1
+                        else:
+                            posWordset[tup] = 1
 
             except UnicodeEncodeError:
                 print("Error yo, I'm counting dis.")
                 errorCount += 1
+    
+    return TaggedNER(nerTaggedLines, posTaggedLines, nerWordset, posWordset)
 
-        print("unicodeErrorCount: " + str(errorCount))
-        print()
-        print("taggedWordsCount: " + str(taggedWordsCount))
-        print("untaggedWordsCount: " + str(untaggedWordsCount))
-        print("percentageCounted: " + str(taggedWordsCount/(taggedWordsCount+untaggedWordsCount)))
-        print()
-        print("taggedNNPCount: " + str(taggedNNPCount))
-        print("percentageNNPCounted: " + str(taggedAsNNP/(taggedAsNNP+notTaggedAsNNP)))
-        print()
-        print(wordset)
+def main():
+    posTagger = trainPosTag('unigram')
+
+    tn = processSceleTrainingData(posTagger)
+    print(tn.nerWordset)
 
 if __name__ == "__main__":
     main()

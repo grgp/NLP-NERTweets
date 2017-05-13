@@ -1,4 +1,5 @@
 import nltk
+import pickle
 from nltk import word_tokenize, pos_tag, ne_chunk
 from wsPostag import trainPosTag
 
@@ -14,7 +15,7 @@ def joinBackTogether(words):
             s += ' ' + word
     return s.strip()
 
-class TaggedNER:
+class processedTrainingData:
     nerTaggedLines = []
     posTaggedLines = []
     nerWordset = {}
@@ -83,14 +84,22 @@ def processTrainingData(posTagger, trainingFiles):
                     print("Error yo, I'm counting dis.")
                     errorCount += 1
         
-        return TaggedNER(nerTaggedLines, posTaggedLines, nerWordset, posWordset)
+        return processedTrainingData(nerTaggedLines, posTaggedLines, nerWordset, posWordset)
 
-def main():
-    posTagger = trainPosTag('unigram')
+def main():    
     trainingFiles = ["train/training_data_new.txt", "train/ugm_data_train.txt"]
 
-    tn = processTrainingData(posTagger, trainingFiles)
-    nerTagger = nltk.UnigramTagger(tn.nerTaggedLines)
+    try:
+        posTagger = pickle.load(open("posTagger.pickle", "rb"))
+        ptd = pickle.load(open("ptd.pickle", "rb"))
+        print("Loaded processed training data from dump!")
+    except (OSError, IOError) as e:
+        posTagger = trainPosTag('unigram')
+        ptd = processTrainingData(posTagger, trainingFiles)
+        pickle.dump(ptd, open("posTagger.pickle", "wb"))
+        pickle.dump(ptd, open("ptd.pickle", "wb"))
+    
+    nerTagger = nltk.UnigramTagger(ptd.nerTaggedLines)
     
     jn = nerTagger.tag(word_tokenize("Budi pergi ke pasar bersama Jokowi ke pasar Juventus bersama Andre orang Malaysia."))
     print(jn)

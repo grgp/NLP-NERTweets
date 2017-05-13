@@ -1,9 +1,19 @@
 ### NER
-Tugas NLP-nya George, Thoyib dan Zaky.
+Tugas NLP-nya George, Zaky, dan Thoyib.
 
-Just do
+Just do:
 ```sh
 $ git clone https://github.com/grgp/NLP-NERTweets.git
+```
+
+Then run:
+```sh
+$ python main.py
+```
+
+By default, the code used the dump data (pickles/*.pickle) to avoid always preprocessing the training data. To reload the data:
+```sh
+$ python main.py reload
 ```
 
 ### Licenses

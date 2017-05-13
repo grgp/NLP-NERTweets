@@ -1,7 +1,6 @@
-import nltk
-import pickle
+import nltk, pickle, sys
 from nltk import word_tokenize, pos_tag, ne_chunk
-from wsPostag import trainPosTag
+from readPosTag import readPosTag
 
 def postgd(line):
     return word_tokenize(line.strip())
@@ -85,24 +84,3 @@ def processTrainingData(posTagger, trainingFiles):
                     errorCount += 1
         
         return processedTrainingData(nerTaggedLines, posTaggedLines, nerWordset, posWordset)
-
-def main():    
-    trainingFiles = ["train/training_data_new.txt", "train/ugm_data_train.txt"]
-
-    try:
-        posTagger = pickle.load(open("posTagger.pickle", "rb"))
-        ptd = pickle.load(open("ptd.pickle", "rb"))
-        print("Loaded processed training data from dump!")
-    except (OSError, IOError) as e:
-        posTagger = trainPosTag('unigram')
-        ptd = processTrainingData(posTagger, trainingFiles)
-        pickle.dump(ptd, open("posTagger.pickle", "wb"))
-        pickle.dump(ptd, open("ptd.pickle", "wb"))
-    
-    nerTagger = nltk.UnigramTagger(ptd.nerTaggedLines)
-    
-    jn = nerTagger.tag(word_tokenize("Budi pergi ke pasar bersama Jokowi ke pasar Juventus bersama Andre orang Malaysia."))
-    print(jn)
-
-if __name__ == "__main__":
-    main()

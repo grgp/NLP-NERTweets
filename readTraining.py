@@ -47,20 +47,17 @@ def trainingDataToNERTaggedTuples(line):
 
     return taggedWords
 
-def processTrainingData(posTagger):
-    trainingFiles = ["train/training_data_new.txt", "train/ugm_data_train.txt"]
-
+def processTrainingData(posTagger, trainingFiles):
     nerTaggedLines = []
     posTaggedLines = []
     nerWordset = {}
     posWordset = {}
-    nerTaggedWords = []
 
     for trainingFile in trainingFiles:
         with open(trainingFile) as f:
             for idx, line in enumerate(f):
                 try:
-                    nerTaggedWords.extend(trainingDataToNERTaggedTuples(line))
+                    nerTaggedWords = trainingDataToNERTaggedTuples(line)
 
                     justWords = [tuple[0] for tuple in nerTaggedWords]
                     posTaggedWords = posTagger.tag(justWords)
@@ -90,9 +87,13 @@ def processTrainingData(posTagger):
 
 def main():
     posTagger = trainPosTag('unigram')
+    trainingFiles = ["train/training_data_new.txt", "train/ugm_data_train.txt"]
 
-    tn = processTrainingData(posTagger)
-    print(tn.nerWordset)
+    tn = processTrainingData(posTagger, trainingFiles)
+    nerTagger = nltk.UnigramTagger(tn.nerTaggedLines)
+    
+    jn = nerTagger.tag(word_tokenize("Budi pergi ke pasar bersama Jokowi ke pasar Juventus bersama Andre orang Malaysia."))
+    print(jn)
 
 if __name__ == "__main__":
     main()

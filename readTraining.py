@@ -2,18 +2,6 @@ import nltk, pickle, sys
 from nltk import word_tokenize, pos_tag, ne_chunk
 from readPosTag import readPosTag
 
-def postgd(line):
-    return word_tokenize(line.strip())
-
-def joinBackTogether(words):
-    s = ""
-    for word in words:
-        if len(word) == 1 and word[0] in [',', '.', '!', '?', ':', ';']:
-            s += word
-        else:
-            s += ' ' + word
-    return s.strip()
-
 class processedTrainingData:
     nerTaggedLines = []
     posTaggedLines = []
@@ -32,7 +20,7 @@ def trainingDataToNERTaggedTuples(line):
 
     # add tokens left of first ENAMEX to taggedWords
     if len(taggedRaw[0]) > 0:
-        residue = taggedRaw[0].strip().split(' ')
+        residue = word_tokenize(taggedRaw[0])
         taggedWords.extend([(word, 'X') for word in residue])
 
     # add ENAMEX tokens
@@ -42,7 +30,7 @@ def trainingDataToNERTaggedTuples(line):
         taggedWords.append((th[1], th[0]))
         
         # add tokens right of ENAMEX
-        filtered = [(word, 'X') for word in residue[1].split(' ') if len(word) > 0]
+        filtered = [(word, 'X') for word in word_tokenize(residue[1]) if len(word) > 0]
         taggedWords.extend(filtered)
 
     return taggedWords

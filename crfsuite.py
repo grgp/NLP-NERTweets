@@ -61,7 +61,7 @@ def sent2tokens(sent):
 def crf(sentences):
     sep_idx = int(len(sentences) * 0.75)
     X_train = [sent2features(s) for s in sentences[:sep_idx]]
-    y_train = [sent2labels(s) for s in sentences[:sep_idx]]
+    y_train = [sent2labels(s) for s in sentences[:sep_idx]]    
 
     X_test = [sent2features(s) for s in sentences[sep_idx+1:]]
     y_test = [sent2labels(s) for s in sentences[sep_idx+1:]]

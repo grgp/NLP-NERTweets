@@ -100,8 +100,7 @@ def processTrainingData(posTagger, trainingFiles):
                             else:
                                 posWordset[tup] = 1
 
-                except UnicodeEncodeError:
-                    print("Error yo, I'm counting dis.")
+                except UnicodeEncodeError:                    
                     errorCount += 1
 
         return processedTrainingData(trainingLines, nerTaggedLines, posTaggedLines, nerWordset, posWordset, iobTaggedLines)

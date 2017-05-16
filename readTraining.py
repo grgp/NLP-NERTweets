@@ -1,6 +1,6 @@
 import nltk, pickle, sys
 from nltk import word_tokenize, pos_tag, ne_chunk
-from readPosTag import readPosTag
+from readPostag import readPosTag
 
 class processedTrainingData:
     trainingLines = []
@@ -15,7 +15,7 @@ class processedTrainingData:
         self.nerTaggedLines = nerTaggedLines
         self.posTaggedLines = posTaggedLines
         self.nerWordset = nerWordset
-        self.posWordset = posWordset    
+        self.posWordset = posWordset
         self.iobTaggedLines = iobTaggedLines
 
 def trainingDataToNERTaggedTuples(line):
@@ -32,7 +32,7 @@ def trainingDataToNERTaggedTuples(line):
         residue = fragment.split('</ENAMEX>')
         th = residue[0].strip().split('">')
         taggedWords.append((th[1], th[0]))
-        
+
         # add tokens right of ENAMEX
         filtered = [(word, None) for word in word_tokenize(residue[1]) if len(word) > 0]
         taggedWords.extend(filtered)
@@ -53,9 +53,11 @@ def convertToIOB(nerTaggedWords, posTaggedWords):
                 for j in range(1, len(chunks)):
                     iobTaggedWords.append((chunks[j], "NNP", "I-"+nerTaggedWords[i][1]))
         else:
-            iobTaggedWords.append((nerTaggedWords[i][0], posTaggedWords[i][1], "O"))
+            if posTaggedWords[i][1] is not None:
+                iobTaggedWords.append((nerTaggedWords[i][0], posTaggedWords[i][1], "O"))
+            else:
+                iobTaggedWords.append((nerTaggedWords[i][0], "U", "O"))
 
-    print(iobTaggedWords)
     return iobTaggedWords
 
 def processTrainingData(posTagger, trainingFiles):
@@ -77,7 +79,7 @@ def processTrainingData(posTagger, trainingFiles):
 
                     justWords = [tuple[0] for tuple in nerTaggedWords]
                     posTaggedWords = posTagger.tag(justWords)
-                    
+
                     iobTaggedWords = convertToIOB(nerTaggedWords, posTaggedWords)
 
                     nerTaggedLines.append(nerTaggedWords)
@@ -101,5 +103,5 @@ def processTrainingData(posTagger, trainingFiles):
                 except UnicodeEncodeError:
                     print("Error yo, I'm counting dis.")
                     errorCount += 1
-        
+
         return processedTrainingData(trainingLines, nerTaggedLines, posTaggedLines, nerWordset, posWordset, iobTaggedLines)

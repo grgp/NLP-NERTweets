@@ -33,7 +33,7 @@ def word2features(sent, i):
         ])
     else:
         features.append('BOS')
-        
+
     if i < len(sent)-1:
         word1 = sent[i+1][0]
         postag1 = sent[i+1][1]
@@ -46,7 +46,7 @@ def word2features(sent, i):
         ])
     else:
         features.append('EOS')
-                
+
     return features
 
 def sent2features(sent):
@@ -58,5 +58,34 @@ def sent2labels(sent):
 def sent2tokens(sent):
     return [token for token, postag, label in sent]
 
-def crf(sentence):
-    return sent2tokens(sentence)
+def crf(sentences):
+    sep_idx = int(len(sentences) * 0.75)
+    X_train = [sent2features(s) for s in sentences[:sep_idx]]
+    y_train = [sent2labels(s) for s in sentences[:sep_idx]]
+
+    X_test = [sent2features(s) for s in sentences[sep_idx+1:]]
+    y_test = [sent2labels(s) for s in sentences[sep_idx+1:]]
+
+    trainer = pycrfsuite.Trainer(verbose=False)
+
+    for xseq, yseq in zip(X_train, y_train):
+        trainer.append(xseq, yseq)
+
+    trainer.set_params({
+        'c1': 1.0,   # coefficient for L1 penalty
+        'c2': 1e-3,  # coefficient for L2 penalty
+        'max_iterations': 50,  # stop earlier
+
+        # include transitions that are possible, but not observed
+        'feature.possible_transitions': True
+    })
+
+    trainer.params()
+    trainer.train('conll2002-esp.crfsuite')
+    trainer.logparser.last_iteration
+    print(len(trainer.logparser.iterations), trainer.logparser.iterations[-1])
+
+    tagger = pycrfsuite.Tagger()
+    tagger.open('conll2002-esp.crfsuite')
+
+    return tagger

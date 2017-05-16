@@ -2,7 +2,7 @@ import nltk, pickle, sys
 from nltk import word_tokenize
 from readTraining import readPosTag, processTrainingData
 from nltk.tokenize.moses import MosesDetokenizer
-from crfsuite import crf
+from crfsuite import *
 
 def loadProcessedTrainingData():
     trainingFiles = ["train/training_data_new.txt", "train/ugm_data_train.txt"]
@@ -23,11 +23,11 @@ def loadProcessedTrainingData():
     return ptd
 
 def joinTogether(words):
-    justWords = [tup[0] if tup[1] is None else ("<ENAMEX TYPE=" + tup[1] + ">" + tup[0] + "</ENAMEX>") for tup in words]    
+    justWords = [tup[0] if tup[1] is None else ("<ENAMEX TYPE=" + tup[1] + ">" + tup[0] + "</ENAMEX>") for tup in words]
     detokenizer = MosesDetokenizer()
     return detokenizer.detokenize(justWords, return_str=True)
 
-def setupNerTagger(ptd):    
+def setupNerTagger(ptd):
     nerTagger = nltk.UnigramTagger(ptd.nerTaggedLines)
     return nerTagger
 
@@ -44,16 +44,22 @@ def main():
     ptd = loadProcessedTrainingData()
     # nerTagger = setupNerTagger(ptd)
     # taggedTest = tagTestSet(nerTagger)
-    crfRes = crf(ptd.nerTaggedLines)
-    print(crfRes)
+    crfTagger = crf(ptd.iobTaggedLines)
+    taggedTest = tagTestSet(crfTagger)
 
-    for line in taggedTest:
-        pass
-        #print(line)
+    example_sent = ptd.iobTaggedLines[4]
+    print(' '.join(sent2tokens(example_sent)), end='\n\n')
 
-    jn = nerTagger.tag(word_tokenize("Budi, pergi budi BUDI dan bUdI sama BabaDi."))
+    print(crfTagger.tag(sent2features(example_sent)))
+    print("Predicted:", ' '.join(crfTagger.tag(sent2features(example_sent))))
+    print("Correct:  ", ' '.join(sent2labels(example_sent)))
 
-    print(joinTogether(jn))
+    # for line in taggedTest:
+    #     print(line)
+
+    # jn = nerTagger.tag(word_tokenize("Budi, pergi budi BUDI dan bUdI sama BabaDi."))
+    #
+    # print(joinTogether(jn))
 
 if __name__ == "__main__":
     main()

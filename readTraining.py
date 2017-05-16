@@ -8,13 +8,15 @@ class processedTrainingData:
     posTaggedLines = []
     nerWordset = {}
     posWordset = {}
+    iobTaggedLines = []
 
-    def __init__(self, trainingLines=[], nerTaggedLines=[], posTaggedLines=[], nerWordset={}, posWordset={}):
+    def __init__(self, trainingLines=[], nerTaggedLines=[], posTaggedLines=[], nerWordset={}, posWordset={}, iobTaggedLines=[]):
         self.trainingLines = trainingLines
         self.nerTaggedLines = nerTaggedLines
         self.posTaggedLines = posTaggedLines
         self.nerWordset = nerWordset
         self.posWordset = posWordset    
+        self.iobTaggedLines = iobTaggedLines
 
 def trainingDataToNERTaggedTuples(line):
     taggedWords = []
@@ -37,12 +39,32 @@ def trainingDataToNERTaggedTuples(line):
 
     return taggedWords
 
+def convertToIOB(nerTaggedWords, posTaggedWords):
+    n = len(nerTaggedWords)
+    iobTaggedWords = []
+    for i in range(n):
+        if nerTaggedWords[i][1] is not None:
+            iob_tag = "B"
+            chunks = nerTaggedWords[i][0].split(" ")
+            if len(chunks) == 1:
+                iobTaggedWords.append((nerTaggedWords[i][0], "NNP", "B-"+nerTaggedWords[i][1]))
+            else:
+                iobTaggedWords.append((chunks[0], "NNP", "B-"+nerTaggedWords[i][1]))
+                for j in range(1, len(chunks)):
+                    iobTaggedWords.append((chunks[j], "NNP", "I-"+nerTaggedWords[i][1]))
+        else:
+            iobTaggedWords.append((nerTaggedWords[i][0], posTaggedWords[i][1], "O"))
+
+    print(iobTaggedWords)
+    return iobTaggedWords
+
 def processTrainingData(posTagger, trainingFiles):
     trainingLines = []
     nerTaggedLines = []
     posTaggedLines = []
     nerWordset = {}
     posWordset = {}
+    iobTaggedLines = []
 
     for trainingFile in trainingFiles:
         with open(trainingFile) as f:
@@ -50,13 +72,17 @@ def processTrainingData(posTagger, trainingFiles):
                 trainingLines.append(line)
                 try:
                     nerTaggedWords = trainingDataToNERTaggedTuples(line)
+                    nerTaggedWords.append((".", None))
                     nerTaggedWords.extend([(tup[0].lower(), tup[1]) for tup in nerTaggedWords])
 
                     justWords = [tuple[0] for tuple in nerTaggedWords]
                     posTaggedWords = posTagger.tag(justWords)
                     
+                    iobTaggedWords = convertToIOB(nerTaggedWords, posTaggedWords)
+
                     nerTaggedLines.append(nerTaggedWords)
                     posTaggedLines.append(posTaggedWords)
+                    iobTaggedLines.append(iobTaggedWords)
 
                     for idx, tup in enumerate(nerTaggedWords):
                         if tup[1] != 'X':
@@ -76,4 +102,4 @@ def processTrainingData(posTagger, trainingFiles):
                     print("Error yo, I'm counting dis.")
                     errorCount += 1
         
-        return processedTrainingData(trainingLines, nerTaggedLines, posTaggedLines, nerWordset, posWordset)
+        return processedTrainingData(trainingLines, nerTaggedLines, posTaggedLines, nerWordset, posWordset, iobTaggedLines)

@@ -45,10 +45,11 @@ def main():
     taggedTest = tagTestSet(nerTagger)
     
     for line in taggedTest:
-        print(line)
+        pass
+        #print(line)
 
     jn = nerTagger.tag(word_tokenize("Budi, pergi budi BUDI dan bUdI sama BabaDi."))
-    # tagTestSet()
+
     print(joinTogether(jn))
 
 if __name__ == "__main__":

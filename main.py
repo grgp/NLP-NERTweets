@@ -47,7 +47,7 @@ def main():
     for line in taggedTest:
         print(line)
 
-    jn = nerTagger.tag(word_tokenize("Budi, pergi BUDI dan bUdI sama BabaDi."))
+    jn = nerTagger.tag(word_tokenize("Budi, pergi budi BUDI dan bUdI sama BabaDi."))
     # tagTestSet()
     print(jn)
     print(joinTogether(jn))

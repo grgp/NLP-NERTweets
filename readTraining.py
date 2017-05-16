@@ -50,6 +50,7 @@ def processTrainingData(posTagger, trainingFiles):
                 trainingLines.append(line)
                 try:
                     nerTaggedWords = trainingDataToNERTaggedTuples(line)
+                    nerTaggedWords.extend([(tup[0].lower(), tup[1]) for tup in nerTaggedWords])
 
                     justWords = [tuple[0] for tuple in nerTaggedWords]
                     posTaggedWords = posTagger.tag(justWords)

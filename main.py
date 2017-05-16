@@ -22,7 +22,7 @@ def loadProcessedTrainingData():
     return ptd
 
 def joinTogether(words):
-    justWords = [tup[0] if tup[1] is None or len(tup[1]) < 3 else ("<ENAMEX TYPE=" + tup[1] + ">" + tup[0] + "</ENAMEX>") for tup in words]
+    justWords = [tup[0] if tup[1] is None else ("<ENAMEX TYPE=" + tup[1] + ">" + tup[0] + "</ENAMEX>") for tup in words]    
     detokenizer = MosesDetokenizer()
     return detokenizer.detokenize(justWords, return_str=True)
 
@@ -49,7 +49,6 @@ def main():
 
     jn = nerTagger.tag(word_tokenize("Budi, pergi budi BUDI dan bUdI sama BabaDi."))
     # tagTestSet()
-    print(jn)
     print(joinTogether(jn))
 
 if __name__ == "__main__":

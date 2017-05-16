@@ -23,7 +23,7 @@ def trainingDataToNERTaggedTuples(line):
     # add tokens left of first ENAMEX to taggedWords
     if len(taggedRaw[0]) > 0:
         residue = word_tokenize(taggedRaw[0])
-        taggedWords.extend([(word, 'X') for word in residue])
+        taggedWords.extend([(word, None) for word in residue])
 
     # add ENAMEX tokens
     for fragment in taggedRaw[1:]:
@@ -32,7 +32,7 @@ def trainingDataToNERTaggedTuples(line):
         taggedWords.append((th[1], th[0]))
         
         # add tokens right of ENAMEX
-        filtered = [(word, 'X') for word in word_tokenize(residue[1]) if len(word) > 0]
+        filtered = [(word, None) for word in word_tokenize(residue[1]) if len(word) > 0]
         taggedWords.extend(filtered)
 
     return taggedWords

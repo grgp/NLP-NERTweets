@@ -21,19 +21,34 @@ def loadProcessedTrainingData():
 
     return ptd
 
-def setupNerTagger():    
-    ptd = loadProcessedTrainingData()
-    nerTagger = nltk.UnigramTagger(ptd.nerTaggedLines)
-    return nerTagger
-
 def joinTogether(words):
     justWords = [tup[0] if tup[1] is None or len(tup[1]) < 3 else ("<ENAMEX TYPE=" + tup[1] + ">" + tup[0] + "</ENAMEX>") for tup in words]
     detokenizer = MosesDetokenizer()
     return detokenizer.detokenize(justWords, return_str=True)
 
+def setupNerTagger(ptd):    
+    nerTagger = nltk.UnigramTagger(ptd.nerTaggedLines)
+    return nerTagger
+
+def tagTestSet(tagger):
+    testingFile = "test/testing_data_new.txt"
+    taggedTest = []
+    with open(testingFile) as f:
+        for idx, line in enumerate(f):
+            taggedTest.append(joinTogether(tagger.tag(word_tokenize(line))))
+
+    return taggedTest
+
 def main():
-    nerTagger = setupNerTagger()
-    jn = nerTagger.tag(word_tokenize("Budi, pergi ke pasar bersama Jokowi ke pasar Juventus bersama Andre orang Malaysia."))
+    ptd = loadProcessedTrainingData()
+    nerTagger = setupNerTagger(ptd)
+    taggedTest = tagTestSet(nerTagger)
+    
+    for line in taggedTest:
+        print(line)
+
+    jn = nerTagger.tag(word_tokenize("Budi, pergi BUDI dan bUdI sama BabaDi."))
+    # tagTestSet()
     print(jn)
     print(joinTogether(jn))
 

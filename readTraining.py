@@ -3,12 +3,14 @@ from nltk import word_tokenize, pos_tag, ne_chunk
 from readPosTag import readPosTag
 
 class processedTrainingData:
+    trainingLines = []
     nerTaggedLines = []
     posTaggedLines = []
     nerWordset = {}
     posWordset = {}
 
-    def __init__(self, nerTaggedLines=[], posTaggedLines=[], nerWordset={}, posWordset={}):
+    def __init__(self, trainingLines=[], nerTaggedLines=[], posTaggedLines=[], nerWordset={}, posWordset={}):
+        self.trainingLines = trainingLines
         self.nerTaggedLines = nerTaggedLines
         self.posTaggedLines = posTaggedLines
         self.nerWordset = nerWordset
@@ -36,6 +38,7 @@ def trainingDataToNERTaggedTuples(line):
     return taggedWords
 
 def processTrainingData(posTagger, trainingFiles):
+    trainingLines = []
     nerTaggedLines = []
     posTaggedLines = []
     nerWordset = {}
@@ -44,6 +47,7 @@ def processTrainingData(posTagger, trainingFiles):
     for trainingFile in trainingFiles:
         with open(trainingFile) as f:
             for idx, line in enumerate(f):
+                trainingLines.append(line)
                 try:
                     nerTaggedWords = trainingDataToNERTaggedTuples(line)
 
@@ -71,4 +75,4 @@ def processTrainingData(posTagger, trainingFiles):
                     print("Error yo, I'm counting dis.")
                     errorCount += 1
         
-        return processedTrainingData(nerTaggedLines, posTaggedLines, nerWordset, posWordset)
+        return processedTrainingData(trainingLines, nerTaggedLines, posTaggedLines, nerWordset, posWordset)

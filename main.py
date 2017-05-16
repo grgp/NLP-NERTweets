@@ -2,6 +2,7 @@ import nltk, pickle, sys
 from nltk import word_tokenize
 from readTraining import readPosTag, processTrainingData
 from nltk.tokenize.moses import MosesDetokenizer
+from crfsuite import crf
 
 def loadProcessedTrainingData():
     trainingFiles = ["train/training_data_new.txt", "train/ugm_data_train.txt"]
@@ -41,9 +42,11 @@ def tagTestSet(tagger):
 
 def main():
     ptd = loadProcessedTrainingData()
-    nerTagger = setupNerTagger(ptd)
-    taggedTest = tagTestSet(nerTagger)
-    
+    # nerTagger = setupNerTagger(ptd)
+    # taggedTest = tagTestSet(nerTagger)
+    crfRes = crf(ptd.nerTaggedLines)
+    print(crfRes)
+
     for line in taggedTest:
         pass
         #print(line)
